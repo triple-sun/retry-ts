@@ -3,7 +3,6 @@ import { RetryFailedResult, RetryOkResult, RetryOptions } from "./types";
 import { wait } from "./wait";
 
 /**
- *
  * @param onTry - main callback
  * @param options.tries - tries; 0 === try until no error
  * @param options.delay - delay between attempts
@@ -28,18 +27,15 @@ export const retry = async <T>(
   while (tries === 0 || attempts < tries) {
     attempts += 1;
     try {
-      /** Try */
       const result = await onTry(attempts);
-      /** Exit cycle if no err */
       return { ok: true, result, attempts };
     } catch (error) {
-      /** Save error for later */
       errors.push(error);
-      /** Call on catch function */
+      /** Call onCatch function if present */
       if (onCatch) await onCatch(error, attempts);
-      /** Wait for set time */
+      /** Wait for set time if present */
       if (delay) await wait(exponential ? delay * attempts : delay);
-      /** Continue to next interation */
+      /** Continue to next iteration */
       continue;
     }
   }

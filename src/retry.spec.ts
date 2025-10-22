@@ -1,4 +1,4 @@
-import { retry } from "../src/retry";
+import { retry } from "./retry";
 
 describe("retry tests", () => {
   it("should call on try and return result ", async () => {
@@ -37,9 +37,7 @@ describe("retry tests", () => {
     const onTry = jest.fn((att: number) => {
       throw ON_TRY_ERROR;
     });
-    const onCatch = jest.fn((error, att) => {
-      return "failed";
-    });
+    const onCatch = jest.fn();
 
     const res = await retry((att) => onTry(att), { tries: TRIES, onCatch });
 
