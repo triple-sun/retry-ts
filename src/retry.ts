@@ -1,3 +1,4 @@
+import { deepStrictEqual } from "node:assert";
 import { RetryOnFailException } from "./errors";
 import { RetryFailedResult, RetryOkResult, RetryOptions } from "./types";
 import { wait } from "./wait";
@@ -12,10 +13,17 @@ import { wait } from "./wait";
  */
 export const retry = async <T>(
   onTry: (attempt: number, ...args: unknown[]) => Promise<T> | T,
-  { onCatch, tries = 5, delay = 100, exponential = false }: RetryOptions = {
+  {
+    onCatch,
+    tries = 5,
+    delay = 100,
+    exponential = false,
+    skipSameErrorCheck: skipSameErrorCheck = false,
+  }: RetryOptions = {
     tries: 5,
     delay: 100,
     exponential: false,
+    skipSameErrorCheck: false,
   }
 ): Promise<RetryOkResult<T> | RetryFailedResult> => {
   let attempts = 0;
@@ -27,7 +35,16 @@ export const retry = async <T>(
       const result = await onTry(attempts);
       return { ok: true, value: result, attempts };
     } catch (error) {
-      errors.push(error);
+      if (skipSameErrorCheck) {
+        errors.push(error);
+      } else {
+        try {
+          deepStrictEqual(errors[errors.length - 1], error);
+        } catch (_) {
+          errors.push(error);
+        }
+      }
+
       if (onCatch) await onCatch(error, attempts);
       if (delay) await wait(exponential ? delay * attempts : delay);
     }

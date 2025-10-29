@@ -2,6 +2,7 @@ export type RetryOptions = {
   tries?: number /** 0 === try until no error */;
   delay?: number /** delay between attempts */;
   exponential?: boolean /** wait fort delay*attempt */;
+  skipSameErrorCheck?: boolean /** add same errors to returned array */;
   onCatch?: (
     err: unknown,
     attempt: number,

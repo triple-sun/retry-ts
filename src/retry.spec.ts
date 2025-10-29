@@ -16,18 +16,34 @@ describe("retry tests", () => {
     const TRIES = 10;
 
     const onTry = jest.fn((att: number) => {
-      throw new Error("error");
+      throw new Error(`error${att}`);
     });
 
     const res = await retry((att) => onTry(att), { tries: TRIES });
 
     expect(res.ok).toBe(false);
 
+    if (res.ok === false) {
+      expect(res.attempts).toBe(TRIES);
+    }
+
     expect(onTry).toHaveBeenCalledTimes(TRIES);
 
     Array(TRIES)
       .fill(0)
       .forEach((_, i) => expect(onTry).toHaveBeenCalledWith(i + 1));
+  });
+
+  it("should not add same errors twice", async () => {
+    const TRIES = 10;
+
+    const onTry = jest.fn((att: number) => {
+      throw new Error(`error`);
+    });
+
+    const res = await retry((att) => onTry(att), { tries: TRIES });
+
+    if (res.ok === false) expect(res.errors.length).toBe(1);
   });
 
   it("should try tries # of times and call onCatch if throws", async () => {
