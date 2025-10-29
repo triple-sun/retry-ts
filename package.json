@@ -2,7 +2,6 @@
   "name": "fox-retry-ts",
   "version": "0.1.0",
   "main": "build/index.js",
-  "type": "module",
   "scripts": {
     "test": "jest",
     "build": "tsc",
