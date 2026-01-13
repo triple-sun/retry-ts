@@ -1,11 +1,18 @@
-export class RetryOnTryException extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class CancelError extends Error {
+		readonly name: "CancelError";
+		readonly originalError: Error;
+		constructor(message: string | Error){
+		super();
 
-export class RetryOnFailException extends Error {
-  constructor(message: string) {
-    super(message);
-  }
+		if (message instanceof Error) {
+			this.originalError = message;
+			({message} = message);
+		} else {
+			this.originalError = new Error(message);
+			this.originalError.stack = this.stack;
+		}
+
+		this.name = 'CancelError';
+		this.message = message;
+	}
 }
