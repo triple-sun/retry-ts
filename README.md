@@ -60,7 +60,7 @@ if (result.ok) {
 ### RetryOptions
 
 | Option | Type | Default | Description |
-|Str|Str|Str|Str|
+| ----- | ----- | ------- | ----------- |
 | `tries` | `number` | `5` | Maximum number of attempts (including the first one). Set to `Infinity` to retry indefinitely. |
 | `timeMax` | `number` | `Infinity` | Maximum execution time in milliseconds for the entire retry process. |
 | `waitMin` | `number` | `100` | Minimum wait time between attempts in milliseconds. |
