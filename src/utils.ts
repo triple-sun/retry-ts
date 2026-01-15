@@ -1,10 +1,19 @@
 import { deepStrictEqual } from "node:assert";
+import {
+	BOOL_FN_DEFAULT,
+	FACTOR_DEFAULT,
+	TIME_MAX_DEFAULT,
+	TRIES_DEFAULT,
+	WAIT_MAX_DEFAULT,
+	WAIT_MIN_DEFAULT,
+} from "./defaults";
+
 import { ErrorTypeError, StopRetryError } from "./errors";
-import type { RetryContext, SealedRetryOptions } from "./types";
+import type { RetryContext, RetryOptions } from "./types";
 
 export const validateNumericOption = (
-	name: string,
-	value: number,
+	name: Readonly<string>,
+	value: Readonly<number>,
 	{ finite = true, min = 0 }: { finite?: boolean; min?: number } = {},
 ): void => {
 	if (value === undefined) return;
@@ -19,14 +28,18 @@ export const validateNumericOption = (
 	}
 };
 
-export const handleError = (
-	e: unknown,
+export const getError = (e: unknown) =>
+	e instanceof Error ? e : new ErrorTypeError(e);
+
+export const saveErrorToCtx = (
+	e: Readonly<Error>,
 	c: RetryContext,
-	o: SealedRetryOptions,
-): Error => {
-	const error = e instanceof Error ? e : new ErrorTypeError(e);
+	o: Readonly<RetryOptions>,
+): void => {
+	const error = e instanceof StopRetryError ? e.original : e;
 
 	if (o.skipSameErrorCheck) {
+		/** save error to ctx */
 		/** push error to context.errors */
 		c.errors.push(error);
 	} else {
@@ -38,34 +51,35 @@ export const handleError = (
 			c.errors.push(error);
 		}
 	}
-
-	if (error instanceof StopRetryError) throw error.original;
-
-	return error;
 };
 
 export const getTriesLeft = (
 	c: RetryContext,
-	o: SealedRetryOptions,
-): number => {
-	if (Number.isFinite(o.tries)) {
-		return Math.max(0, o.tries - c.triesConsumed);
-	}
-	return o.tries;
+	tries: Readonly<number> = TRIES_DEFAULT,
+): Readonly<number> => {
+	if (Number.isFinite(tries)) return Math.max(0, tries - c.triesConsumed);
+	return tries;
 };
 
-export const getTimeRemaining = (start: number, timeMax: number) => {
-	if (!Number.isFinite(timeMax)) {
-		return timeMax;
-	}
+export const getTimeRemaining = (
+	start: number,
+	timeMax: Readonly<number> = TIME_MAX_DEFAULT,
+): Readonly<number> => {
+	if (!Number.isFinite(timeMax)) return timeMax;
 	return timeMax - (performance.now() - start);
 };
 
 export const getWaitTime = (
-	timeRemaining: number,
-	triesConsumed: number,
-	{ random, linear, factor, waitMin, waitMax }: SealedRetryOptions,
-) => {
+	timeRemaining: Readonly<number>,
+	triesConsumed: Readonly<number>,
+	{
+		random,
+		linear,
+		factor = FACTOR_DEFAULT,
+		waitMin = WAIT_MIN_DEFAULT,
+		waitMax = WAIT_MAX_DEFAULT,
+	}: Readonly<RetryOptions>,
+): Readonly<number> => {
 	const randomX = random ? Math.random() + 1 : 1;
 	const linearX = linear ? triesConsumed : 1;
 	const factorX = factor ** (Math.max(1, triesConsumed + 1) - 1);
@@ -75,26 +89,15 @@ export const getWaitTime = (
 	return Math.min(waitFor, timeRemaining);
 };
 
-export const handleWaitTime = async (
-	waitTime: number,
-	signal: AbortSignal | null,
-) => {
-	if (waitTime > 0) {
-		await new Promise<void>((resolve, reject) => {
-			const onAbort = () => {
-				clearTimeout(timeoutToken);
-				signal?.removeEventListener("abort", onAbort);
-				reject(signal?.reason);
-			};
-
-			const timeoutToken = setTimeout(() => {
-				signal?.removeEventListener("abort", onAbort);
-				resolve();
-			}, waitTime);
-
-			signal?.addEventListener("abort", onAbort, { once: true });
-
-			return timeoutToken;
-		});
+export const tryBoolFn = async (
+	boolFn: (c: RetryContext) => Promise<boolean> | boolean = BOOL_FN_DEFAULT,
+	c: RetryContext,
+	o: RetryOptions,
+): Promise<boolean> => {
+	try {
+		return await boolFn(c);
+	} catch (e) {
+		saveErrorToCtx(getError(e), c, o);
+		return false;
 	}
 };

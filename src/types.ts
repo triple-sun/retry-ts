@@ -1,3 +1,19 @@
+/** biome-ignore-all lint/correctness/noUnusedImports: <used in TSDoc> */
+// biome-ignore assist/source/organizeImports: <used in TSDoc>
+import {
+	TRIES_DEFAULT,
+	TIME_MAX_DEFAULT,
+	TIME_MIN_DEFAULT,
+	WAIT_MAX_DEFAULT,
+	WAIT_MIN_DEFAULT,
+	FACTOR_DEFAULT,
+	LINEAR_DEFAULT,
+	RANDOM_DEFAULT,
+	SKIP_SAME_ERROR_DEFAULT,
+	ON_CATCH_DEFAULT,
+	BOOL_FN_DEFAULT,
+} from "./defaults";
+
 /** Main fn type */
 export type OnTryFunction<VALUE_TYPE = void> = (
 	input: RetryContext,
@@ -8,7 +24,6 @@ export type OnTryFunction<VALUE_TYPE = void> = (
 export type RetryContext = {
 	errors: Error[];
 	attempts: number;
-	//triesLeft: number;
 	triesConsumed: number;
 	readonly start: number;
 	end: number;
@@ -16,55 +31,89 @@ export type RetryContext = {
 
 /** Initial options object */
 export type RetryOptions = {
-		readonly tries?: number /** Infinity === try until no error @default 5 */;
-		readonly timeMin?: number /** limit execution by ms @default 0 */;
-		readonly timeMax?: number /** limit execution by ms @default Number.POSITIVE_INFINITY */;
-		readonly waitMin?: number /** wait between attempts @default 100 */;
-		readonly waitMax?: number /** wait between attempts @default Number.POSITIVE_INFINITY */;
-		readonly factor?: number /** multiply delay by exponent**consumed @default 1 */;
-		readonly linear?: boolean /** multply delay by attempt @default false */;
-		readonly random?: boolean /** randomize time between tries @default false */;
-		readonly skipSameErrorCheck?: boolean /** add same errors to returned array @default false */;
-		/** function to call on catch */
-		readonly onCatch?: (context: RetryContext) => Promise<unknown> | unknown;
-		/** increment attempts by 1 only if returns true */
-		readonly consumeIf?: (context: RetryContext) => Promise<boolean> | boolean;
-		readonly retryIf?: (context: RetryContext) => Promise<boolean> | boolean;
-		/**  */
 		/**
-	 	* You can use abort conroller to cancel everything 
+		 * try this amount of times (includint 1st attempt);
+		 * Infinity === try until no error
+		 * @default - @see TRIES_DEFAULT
+		 */
+		tries?: number;
+		/**
+		 * NOT IMPLEMENTED
+		 * @todo: implement :)
+		 * set min execution time by ms
+		 * @default - @see TIME_MIN_DEFAULT
+		 */
+		timeMin?: number;
+		/**
+		 * limit execution time by ms
+		 * @default - @see TIME_MAX_DEFAULT
+		 */
+		timeMax?: number;
+		/**
+		 * set min wait time between attempts
+		 * overridden by time remaining
+		 * @default - @see WAIT_MIN_DEFAULT
+		 */
+		waitMin?: number;
+		/**
+		 * max wait between attempts
+		 * overrides waitMin if waitMax<waitMin
+		 * @default - @see WAIT_MAX_DEFAULT
+		 */
+		waitMax?: number;
+		/** 
+		 * multiply waitTime by exponent**triesConsumed 
+		 * @default - @see FACTOR_DEFAULT
+		 */
+		factor?: number;
+		/** 
+		 * multply delay by attempt 
+		 * @default - @see LINEAR_DEFAULT
+		*/
+		linear?: boolean 
+		 /** 
+		  * randomize time between tries 
+		  * @default - @see RANDOM_DEFAULT 
+		  */
+		random?: boolean;
+		/** 
+		 * allow continuous saving of 
+		 * multiple instances of same error to ctx.errors
+		 * @default - @see SKIP_SAME_ERROR_DEFAULT
+		 */
+		skipSameErrorCheck?: boolean ;
+		/** 
+		 * function to call on catch 
+		 * @default - @see ON_CATCH_DEFAULT 
+		 */
+		onCatch?: (context: RetryContext) => Promise<unknown> | unknown;
+		/** 
+		 * will not increment triesConsumed by 1 
+		 * if consumeIf() returns false or throws  
+		 * @default - @see BOOL_FN_DEFAULT
+		 */
+		consumeIf?: (context: RetryContext) => Promise<boolean> | boolean;
+		/** 
+		 * will not retry if retryIf() 
+		 * returns false or throws 
+		 * @default - @see BOOL_FN_DEFAULT 
+		 */
+		retryIf?: (context: RetryContext) => Promise<boolean> | boolean;
+		/**
+	 	* You can use abort conroller to cancel execution 
 	 	* {@link https://developer.mozilla.org/en-US/docs/Web/API/AbortController | AbortController}
-	 	* @example 
-	 	```
-		import { retry } from 'retry-ts';
-		import { EventEmitter } from "node:stream";
-
-		const controller = new AbortController();
-		const fn = async () => {};
-		const cancelFn = () => {
-			controller.abort(new Error('Called cancel function'));
-		}
-
-		try {
-			await retry(run, {signal: controller.signal});
-		} catch (error) {
-			console.log(error.message); // 'Called cancel function'
-		}
-		```
 	 	*/
-		readonly signal?: AbortSignal | null | undefined;
+		signal?: AbortSignal | undefined;
 	};
-
-export type SealedRetryOptions = Readonly<Required<RetryOptions>>;
 
 /** Results */
 export type RetryOkResult<VALUE_TYPE> = {
 	readonly ok: true;
 	readonly value: Awaited<VALUE_TYPE>;
-	readonly context: Readonly<RetryContext>;
+	readonly ctx: Readonly<RetryContext>;
 };
 
 export type RetryFailedResult = {
 	readonly ok: false;
-	readonly context: Readonly<RetryContext>;
+	readonly ctx: Readonly<RetryContext>;
 };

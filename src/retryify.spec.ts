@@ -16,8 +16,8 @@ describe("retryify tests", () => {
 		if (result.ok) {
 			expect(result.value).toBe(`Got 10!`);
 		} else {
-			expect(result.context.errors[0]?.message).toBe("Got error");
-			expect(result.context.attempts).toBeGreaterThan(0);
+			expect(result.ctx.errors[0]?.message).toBe("Got error");
+			expect(result.ctx.attempts).toBeGreaterThan(0);
 		}
 	});
 
