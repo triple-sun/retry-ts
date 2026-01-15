@@ -1,6 +1,10 @@
 import { ErrorTypeError, StopRetryError } from "./errors";
 import { again } from "./retry";
-import { wait } from "./wait";
+
+const wait = (duration: number) => {
+	return new Promise((resolve) => setTimeout(resolve, duration));
+};
+
 
 describe("retry tests (tries)", () => {
 	beforeAll(() => {
