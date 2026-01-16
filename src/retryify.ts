@@ -1,4 +1,4 @@
-import { again } from "./retry";
+import { retry } from "./retry";
 import type { RetryFailedResult, RetryOkResult, RetryOptions } from "./types";
 
 export const retryify = <ARGS extends unknown[], VALUE_TYPE>(
@@ -8,6 +8,6 @@ export const retryify = <ARGS extends unknown[], VALUE_TYPE>(
 	...arguments_: ARGS
 ) => Promise<RetryFailedResult | RetryOkResult<VALUE_TYPE>>) => {
 	return function (this: unknown, ...arguments_) {
-		return again(() => function_.apply(this, arguments_), options);
+		return retry(() => function_.apply(this, arguments_), options);
 	};
 };

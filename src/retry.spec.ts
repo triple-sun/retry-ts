@@ -1,10 +1,9 @@
 import { ErrorTypeError, StopRetryError } from "./errors";
-import { again } from "./retry";
+import { retry } from "./retry";
 
 const wait = (duration: number) => {
 	return new Promise((resolve) => setTimeout(resolve, duration));
 };
-
 
 describe("retry tests (tries)", () => {
 	beforeAll(() => {
@@ -19,7 +18,7 @@ describe("retry tests (tries)", () => {
 	it("should call on try and return result ", async () => {
 		let calls = 0;
 
-		const res = await again(async () => {
+		const res = await retry(async () => {
 			calls++;
 			return "ok";
 		});
@@ -31,7 +30,7 @@ describe("retry tests (tries)", () => {
 	it("should call on try and return result if result=null", async () => {
 		let calls = 0;
 
-		const res = await again(() => {
+		const res = await retry(() => {
 			calls++;
 			return null;
 		});
@@ -44,7 +43,7 @@ describe("retry tests (tries)", () => {
 		const TRIES = 5;
 		const MAX_TRIES = 15;
 
-		const res = await again(
+		const res = await retry(
 			(c) => {
 				if (c.attempts === MAX_TRIES) return;
 				throw new Error(`Error ${c.attempts}`);
@@ -61,7 +60,7 @@ describe("retry tests (tries)", () => {
 
 		let calls = 0;
 
-		const res = await again(
+		const res = await retry(
 			(c) => {
 				calls++;
 				if (c.attempts === TRIES_LIMIT) {
@@ -81,7 +80,7 @@ describe("retry tests (tries)", () => {
 
 describe("retry error handling  tests", () => {
 	it("should remind to throw ony Errors", async () => {
-		const res = await again(() => {
+		const res = await retry(() => {
 			throw "foo";
 		});
 
@@ -92,7 +91,7 @@ describe("retry error handling  tests", () => {
 		const errorTypeError = new ErrorTypeError("placeholder");
 		let index = 0;
 
-		const res = await again(async (c) => {
+		const res = await retry(async (c) => {
 			await wait(40);
 			index++;
 
@@ -109,7 +108,7 @@ describe("retry error handling  tests", () => {
 		const errorTypeError = new ErrorTypeError("placeholder");
 		let retryIfCalls = 0;
 
-		const res = await again(
+		const res = await retry(
 			async () => {
 				throw errorTypeError;
 			},
@@ -133,7 +132,7 @@ describe("retry StopError tests", () => {
 
 		let count = 0;
 
-		const res = await again(
+		const res = await retry(
 			async (c) => {
 				await wait(100);
 				count++;
@@ -158,7 +157,7 @@ describe("retry StopError tests", () => {
 
 describe("retry options tests", () => {
 	it("should stop when limit is exceeded", async () => {
-		const res = await again(
+		const res = await retry(
 			() => {
 				throw new Error("fail");
 			},
@@ -172,7 +171,7 @@ describe("retry options tests", () => {
 	it("should respect consumeIf", async () => {
 		const TRIES = 5;
 
-		const res = await again(
+		const res = await retry(
 			() => {
 				throw new Error("fail");
 			},
@@ -193,7 +192,7 @@ describe("retry options tests", () => {
 	it("should respect consumeIf even if it throws", async () => {
 		const TRIES = 5;
 
-		const res = await again(
+		const res = await retry(
 			() => {
 				throw new Error("fail");
 			},
@@ -214,7 +213,7 @@ describe("retry options tests", () => {
 	it("should call onCatch with context", async () => {
 		const onCatch = jest.fn();
 
-		await again(
+		await retry(
 			() => {
 				throw new Error("onCatch onTry test error");
 			},
