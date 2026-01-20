@@ -66,9 +66,9 @@
 		"coverageDirectory": "../coverage",
 		"testEnvironment": "node"
 	},
-  "lint-staged": {
-    "*": [
-      "biome check --no-errors-on-unmatched --files-ignore-unknown=true"
-    ]
-  }
+	"lint-staged": {
+		"*": [
+			"biome check --no-errors-on-unmatched --files-ignore-unknown=true"
+		]
+	}
 }
