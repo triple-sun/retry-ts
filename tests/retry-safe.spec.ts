@@ -293,3 +293,35 @@ describe("retryIf and waitIfNotConsumed integration", () => {
 		expect(attempts).toBe(5);
 	});
 });
+
+describe("concurrency with StopError interaction", () => {
+	it("should handle StopError during concurrent execution", async () => {
+		let concurrentAttempts = 0;
+		const MAX_CONCURRENT = 5;
+
+		const res = await retry(
+			"safe",
+			async () => {
+				concurrentAttempts++;
+				// Throw StopError on the 3rd concurrent attempt
+				if (concurrentAttempts === 3) {
+					throw new StopError("stop now");
+				}
+				// Let others run a bit
+				await wait(50);
+				throw new Error("regular error");
+			},
+			{
+				concurrency: MAX_CONCURRENT,
+				retries: 10,
+				waitMin: 10
+			}
+		);
+
+		expect(res.ok).toBe(false);
+		// StopError should stop the retry loop
+		expect(res.ctx.errors.length).toBeGreaterThan(0);
+		const hasStopError = res.ctx.errors.some(e => e.message === "stop now");
+		expect(hasStopError).toBe(true);
+	});
+});

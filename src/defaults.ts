@@ -1,5 +1,4 @@
 export const RETRIES_DEFAULT = 4;
-export const TIME_MIN_DEFAULT = 0;
 export const TIME_MAX_DEFAULT = Number.POSITIVE_INFINITY;
 export const WAIT_MIN_DEFAULT = 100;
 export const WAIT_MAX_DEFAULT = Number.POSITIVE_INFINITY;

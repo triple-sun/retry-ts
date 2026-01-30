@@ -39,14 +39,6 @@ export interface RetryOptions {
 	retries?: number;
 
 	/**
-	 * NOT IMPLEMENTED
-	 * @todo: implement :)
-	 * set min execution time by ms
-	 * @default TIME_MIN_DEFAULT
-	 */
-	readonly timeMin?: number;
-
-	/**
 	 * @description limit execution time by ms
 	 * @default TIME_MAX_DEFAULT
 	 */

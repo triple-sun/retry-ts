@@ -9,7 +9,6 @@ import {
 	RETRIES_DEFAULT,
 	SKIP_SAME_ERROR_CHECK_DEFAULT,
 	TIME_MAX_DEFAULT,
-	TIME_MIN_DEFAULT,
 	WAIT_IF_NOT_CONSUMED_DEFAULT,
 	WAIT_MAX_DEFAULT,
 	WAIT_MIN_DEFAULT
@@ -36,7 +35,6 @@ export const createInternalOptions = (
 ): InternalRetryOptions =>
 	Object.freeze({
 		retries: RETRIES_DEFAULT,
-		timeMin: TIME_MIN_DEFAULT,
 		timeMax: TIME_MAX_DEFAULT,
 		waitMin: WAIT_MIN_DEFAULT,
 		waitMax: WAIT_MAX_DEFAULT,

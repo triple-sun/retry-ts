@@ -8,7 +8,6 @@ import {
 	RETRIES_DEFAULT,
 	SKIP_SAME_ERROR_CHECK_DEFAULT,
 	TIME_MAX_DEFAULT,
-	TIME_MIN_DEFAULT,
 	WAIT_IF_NOT_CONSUMED_DEFAULT,
 	WAIT_MAX_DEFAULT,
 	WAIT_MIN_DEFAULT
@@ -22,7 +21,6 @@ describe("Options Handling", () => {
 			const opts = createInternalOptions({});
 
 			expect(opts.retries).toBe(RETRIES_DEFAULT);
-			expect(opts.timeMin).toBe(TIME_MIN_DEFAULT);
 			expect(opts.timeMax).toBe(TIME_MAX_DEFAULT);
 			expect(opts.waitMin).toBe(WAIT_MIN_DEFAULT);
 			expect(opts.waitMax).toBe(WAIT_MAX_DEFAULT);
@@ -171,5 +169,56 @@ describe("Options Handling", () => {
 
 			expect(() => validateOptions(opts)).not.toThrow();
 		});
+	});
+});
+
+it("should validate waitMin cannot be greater than waitMax", () => {
+	const opts = createInternalOptions({
+		waitMin: 5000,
+		waitMax: 1000
+	});
+	expect(() => validateOptions(opts)).toThrow(RangeError);
+	expect(() => validateOptions(opts)).toThrow("waitMin");
+	expect(() => validateOptions(opts)).toThrow("waitMax");
+});
+
+it("should allow waitMin > waitMax when waitMax is infinite", () => {
+	const opts = createInternalOptions({
+		waitMin: 5000,
+		waitMax: Number.POSITIVE_INFINITY
+	});
+	expect(() => validateOptions(opts)).not.toThrow();
+});
+
+describe("edge cases with large numbers", () => {
+	it("should handle MAX_SAFE_INTEGER for retries", () => {
+		const opts = createInternalOptions({
+			retries: Number.MAX_SAFE_INTEGER
+		});
+		expect(() => validateOptions(opts)).not.toThrow();
+		expect(opts.retries).toBe(Number.MAX_SAFE_INTEGER);
+	});
+
+	it("should handle very large waitMin values", () => {
+		const opts = createInternalOptions({
+			waitMin: Number.MAX_SAFE_INTEGER
+		});
+		expect(() => validateOptions(opts)).not.toThrow();
+		expect(opts.waitMin).toBe(Number.MAX_SAFE_INTEGER);
+	});
+
+	it("should handle very large factor values", () => {
+		const opts = createInternalOptions({
+			factor: 1000
+		});
+		expect(() => validateOptions(opts)).not.toThrow();
+		expect(opts.factor).toBe(1000);
+	});
+
+	it("should reject NaN values", () => {
+		const opts = createInternalOptions({
+			retries: Number.NaN
+		});
+		expect(() => validateOptions(opts)).toThrow();
 	});
 });

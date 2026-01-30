@@ -185,7 +185,6 @@ describe("utils", () => {
 	describe("getWaitTime", () => {
 		const baseOpts: InternalRetryOptions = {
 			retries: RETRIES_DEFAULT,
-			timeMin: 0,
 			timeMax: TIME_MAX_DEFAULT,
 			waitMin: 100,
 			waitMax: WAIT_MAX_DEFAULT,
