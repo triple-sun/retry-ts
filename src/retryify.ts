@@ -1,13 +1,21 @@
-import { retry } from "./retry";
-import type { RetryFailedResult, RetryOkResult, RetryOptions } from "./types";
+import { retrySafe } from "./retry-safe";
+import { retryUnsafe } from "./retry-unsafe";
+import type { RetryOptions, RetryResult } from "./types";
 
-export const retryify = <ARGS extends unknown[], VALUE_TYPE>(
+export const retryifySafe = <ARGS extends unknown[], VALUE_TYPE>(
 	function_: (...arguments_: ARGS) => Promise<VALUE_TYPE> | VALUE_TYPE,
-	options: Readonly<RetryOptions>,
-): ((
-	...arguments_: ARGS
-) => Promise<RetryFailedResult | RetryOkResult<VALUE_TYPE>>) => {
+	options: Readonly<RetryOptions>
+): ((...arguments_: ARGS) => Promise<RetryResult<VALUE_TYPE>>) => {
 	return function (this: unknown, ...arguments_) {
-		return retry(() => function_.apply(this, arguments_), options);
+		return retrySafe(() => function_.apply(this, arguments_), options);
+	};
+};
+
+export const retryifyUnsafe = <ARGS extends unknown[], VALUE_TYPE>(
+	function_: (...arguments_: ARGS) => Promise<VALUE_TYPE> | VALUE_TYPE,
+	options: Readonly<RetryOptions>
+): ((...arguments_: ARGS) => Promise<VALUE_TYPE>) => {
+	return function (this: unknown, ...arguments_) {
+		return retryUnsafe(() => function_.apply(this, arguments_), options);
 	};
 };

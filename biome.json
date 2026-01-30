@@ -1,6 +1,7 @@
 {
 	"$schema": "https://biomejs.dev/schemas/latest/schema.json",
 	"assist": {
+		"enabled": true,
 		"actions": {
 			"source": {
 				"organizeImports": "on",
@@ -16,7 +17,14 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["**", "!**/build", "!**/.sanity", "!**/dist", "!**/.next"]
+		"includes": [
+			"**",
+			"!**/build",
+			"!**/.sanity",
+			"!**/dist",
+			"!**/.next",
+			"!**/oldsrc"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -34,17 +42,47 @@
 	},
 	"linter": {
 		"enabled": true,
+		"domains": {
+			"project": "recommended",
+			"test": "recommended"
+		},
 		"rules": {
 			"recommended": true,
+			"performance": {
+				"noAccumulatingSpread": "error",
+				"noAwaitInLoops": "error"
+			},
 			"complexity": {
+				"recommended": true,
 				"noUselessStringConcat": "error",
 				"noUselessUndefinedInitialization": "error",
 				"noVoid": "error",
-				"useDateNow": "error"
+				"useDateNow": "error",
+				"useLiteralKeys": "off",
+				"noExcessiveCognitiveComplexity": {
+					"level": "info",
+					"options": { "maxAllowedComplexity": 20 }
+				},
+				"noAdjacentSpacesInRegex": "error",
+				"noBannedTypes": "error",
+				"noArguments": "warn",
+				"noEmptyTypeParameters": "error",
+				"noExcessiveNestedTestSuites": "error",
+				"noExtraBooleanCast": "warn",
+				"noExcessiveLinesPerFunction": {
+					"level": "info",
+					"options": { "skipBlankLines": true, "maxLines": 85 }
+				},
+				"noUselessCatch": "error",
+				"noForEach": "info",
+				"noStaticOnlyClass": "info",
+				"noImplicitCoercions": "error",
+				"noUselessConstructor": "error",
+				"noUselessEscapeInRegex": "warn",
+				"useWhile": "info"
 			},
 			"correctness": {
 				"noConstantMathMinMaxClamp": "error",
-				"noUndeclaredVariables": "error",
 				"noUnusedImports": "error",
 				"noUnusedFunctionParameters": "error",
 				"noUnusedPrivateClassMembers": "error",
@@ -76,6 +114,9 @@
 				"useArrayLiterals": "error"
 			},
 			"suspicious": {
+				"noVar": "error",
+				"noAssignInExpressions": "error",
+				"noEmptyBlockStatements": "error",
 				"useAwait": "error",
 				"noEvolvingTypes": "error",
 				"noExplicitAny": "error"
@@ -83,14 +124,13 @@
 		}
 	},
 	"javascript": {
+		"assist": { "enabled": true },
+		"linter": { "enabled": true },
 		"formatter": {
 			"quoteStyle": "double",
 			"jsxQuoteStyle": "single",
 			"arrowParentheses": "asNeeded",
 			"trailingCommas": "none"
-		},
-		"assist": {
-			"enabled": true
 		}
 	}
 }

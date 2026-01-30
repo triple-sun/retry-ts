@@ -1,19 +1,19 @@
-import { retry } from "../src/retry";
-import { wait } from "../src/utils";
+import { retrySafe } from "../../src/retry-safe";
+import { wait } from "../../src/utils";
 
-describe("retry concurrency tests", () => {
+describe("retrySafe", () => {
 	it("should try one onTry by default", async () => {
 		let calls = 0;
 		const TRIES = 5;
 		const CONCURRENCY = 1;
 
-		const res = await retry(
+		const res = await retrySafe(
 			async () => {
 				calls++;
 				await wait(10);
 				throw new Error("try again!");
 			},
-			{ concurrency: CONCURRENCY, tries: TRIES, waitMin: 0 },
+			{ concurrency: CONCURRENCY, tries: TRIES, waitMin: 0 }
 		);
 
 		expect(res.ctx.attempts).toBe(TRIES);
@@ -25,14 +25,14 @@ describe("retry concurrency tests", () => {
 		const TRIES = 5;
 		const CONCURRENCY = 10;
 
-		const res = await retry(
-			async (ctx) => {
+		const res = await retrySafe(
+			async ctx => {
 				calls++;
 				await wait(calls);
 				if (ctx.attempts !== TRIES * CONCURRENCY) throw new Error("try again!");
 				return "ok";
 			},
-			{ concurrency: CONCURRENCY, tries: TRIES },
+			{ concurrency: CONCURRENCY, tries: TRIES }
 		);
 
 		expect(res.ctx.attempts).toBe(5);

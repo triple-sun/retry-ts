@@ -1,7 +1,7 @@
-import { StopRetryError } from "../src/errors";
-import { retry } from "../src/retry";
+import { StopError } from "../../src/errors";
+import { retrySafe } from "../../src/retry-safe";
 
-describe("retry tests (tries)", () => {
+describe("retrySafe", () => {
 	beforeAll(() => {
 		jest.useFakeTimers();
 		jest.runAllTimersAsync();
@@ -14,7 +14,7 @@ describe("retry tests (tries)", () => {
 	it("should call on try and return result ", async () => {
 		let calls = 0;
 
-		const res = await retry(async () => {
+		const res = await retrySafe(() => {
 			calls++;
 			return "ok";
 		});
@@ -26,7 +26,7 @@ describe("retry tests (tries)", () => {
 	it("should call on try and return result if result=null", async () => {
 		let calls = 0;
 
-		const res = await retry(() => {
+		const res = await retrySafe(() => {
 			calls++;
 			return null;
 		});
@@ -39,12 +39,12 @@ describe("retry tests (tries)", () => {
 		const TRIES = 5;
 		const MAX_TRIES = 15;
 
-		const res = await retry(
-			(c) => {
+		const res = await retrySafe(
+			c => {
 				if (c.attempts === MAX_TRIES) return;
 				throw new Error(`Error ${c.attempts}`);
 			},
-			{ tries: TRIES },
+			{ tries: TRIES }
 		);
 
 		expect(res.ok).toBe(false);
@@ -56,16 +56,16 @@ describe("retry tests (tries)", () => {
 
 		let calls = 0;
 
-		const res = await retry(
-			(c) => {
+		const res = await retrySafe(
+			c => {
 				calls++;
 				if (c.attempts === TRIES_LIMIT) {
-					throw new StopRetryError("time to stop");
+					throw new StopError("time to stop");
 				}
 
 				throw new Error(`Error ${c.attempts}`);
 			},
-			{ tries: Number.POSITIVE_INFINITY },
+			{ tries: Number.POSITIVE_INFINITY }
 		);
 
 		expect(res.ok).toBe(false);

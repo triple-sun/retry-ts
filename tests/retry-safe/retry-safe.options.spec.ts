@@ -1,12 +1,12 @@
-import { retry } from "../src/retry";
+import { retrySafe } from "../../src/retry-safe";
 
-describe("retry options tests", () => {
+describe("retrySafe", () => {
 	it("should stop when limit is exceeded", async () => {
-		const res = await retry(
+		const res = await retrySafe(
 			() => {
 				throw new Error("fail");
 			},
-			{ tries: 10, waitMin: 100, timeMax: 250 },
+			{ tries: 10, waitMin: 100, timeMax: 250 }
 		);
 
 		expect(res.ok).toBe(false);
@@ -16,17 +16,17 @@ describe("retry options tests", () => {
 	it("should respect consumeIf", async () => {
 		const TRIES = 5;
 
-		const res = await retry(
+		const res = await retrySafe(
 			() => {
 				throw new Error("fail");
 			},
 			{
 				tries: TRIES,
-				consumeIf: (c) => {
+				consumeIf: c => {
 					if (c.attempts > 2) return true;
 					return false;
-				},
-			},
+				}
+			}
 		);
 
 		expect(res.ok).toBe(false);
@@ -37,17 +37,17 @@ describe("retry options tests", () => {
 	it("should respect consumeIf even if it throws", async () => {
 		const TRIES = 5;
 
-		const res = await retry(
+		const res = await retrySafe(
 			() => {
 				throw new Error("fail");
 			},
 			{
 				tries: TRIES,
-				consumeIf: (c) => {
+				consumeIf: c => {
 					if (c.attempts > 2) return true;
 					return false;
-				},
-			},
+				}
+			}
 		);
 
 		expect(res.ok).toBe(false);
@@ -58,19 +58,19 @@ describe("retry options tests", () => {
 	it("should call onCatch with context", async () => {
 		const onCatch = jest.fn();
 
-		await retry(
+		await retrySafe(
 			() => {
 				throw new Error("onCatch onTry test error");
 			},
-			{ tries: 2, waitMin: 1, onCatch },
+			{ tries: 2, waitMin: 1, onCatch }
 		);
 
 		expect(onCatch).toHaveBeenCalledTimes(2);
 		expect(onCatch).toHaveBeenCalledWith(
 			expect.objectContaining({
 				attempts: expect.any(Number),
-				errors: expect.any(Array),
-			}),
+				errors: expect.any(Array)
+			})
 		);
 	});
 });

@@ -1,10 +1,10 @@
-import { ErrorTypeError, StopRetryError } from "../src/errors";
-import { retry } from "../src/retry";
-import { wait } from "../src/utils";
+import { NotAnErrorError, StopError } from "../../src/errors";
+import { retrySafe } from "../../src/retry-safe";
+import { wait } from "../../src/utils";
 
-describe("retry error handling  tests", () => {
+describe("retrySafe", () => {
 	it("should remind to throw only Errors", async () => {
-		const res = await retry(() => {
+		const res = await retrySafe(() => {
 			throw "foo";
 		});
 
@@ -12,12 +12,12 @@ describe("retry error handling  tests", () => {
 	});
 
 	it("no retry on ErrorErrorTypeError", async () => {
-		const errorErrorTypeError = new ErrorTypeError(
-			"no retry on ErrorErrorTypeError",
+		const errorErrorTypeError = new NotAnErrorError(
+			"no retry on ErrorErrorTypeError"
 		);
 		let index = 0;
 
-		const res = await retry(async (c) => {
+		const res = await retrySafe(async c => {
 			await wait(100);
 			index++;
 
@@ -31,21 +31,21 @@ describe("retry error handling  tests", () => {
 	});
 
 	it("retryIf is not called for ErrorErrorTypeError", async () => {
-		const errorErrorTypeError = new ErrorTypeError(
-			"retryIf is not called for ErrorErrorTypeError",
+		const errorErrorTypeError = new NotAnErrorError(
+			"retryIf is not called for ErrorErrorTypeError"
 		);
 		let retryIfCalls = 0;
 
-		const res = await retry(
-			async () => {
+		const res = await retrySafe(
+			() => {
 				throw errorErrorTypeError;
 			},
 			{
 				retryIf() {
 					retryIfCalls++;
 					return true;
-				},
-			},
+				}
+			}
 		);
 
 		expect(retryIfCalls).toBe(0);
@@ -54,12 +54,12 @@ describe("retry error handling  tests", () => {
 
 	it("should abort when signal is aborted", async () => {
 		const error = new Error("time to stop");
-		const stopError = new StopRetryError(error);
+		const stopError = new StopError(error);
 
 		let count = 0;
 
-		const res = await retry(
-			async (c) => {
+		const res = await retrySafe(
+			async c => {
 				await wait(10);
 				count++;
 
@@ -69,8 +69,8 @@ describe("retry error handling  tests", () => {
 			},
 			{
 				tries: 10,
-				waitMin: 1000,
-			},
+				waitMin: 1000
+			}
 		);
 
 		expect(count).toBe(3);
@@ -81,7 +81,7 @@ describe("retry error handling  tests", () => {
 
 	it("should dedup errors by default", async () => {
 		const error = new Error("same error here");
-		const res = await retry(() => {
+		const res = await retrySafe(() => {
 			throw new Error("same error here");
 		});
 
@@ -91,11 +91,11 @@ describe("retry error handling  tests", () => {
 
 	it("should not dedup errors if necessacy", async () => {
 		const error = new Error("same error here");
-		const res = await retry(
+		const res = await retrySafe(
 			() => {
 				throw new Error("same error here");
 			},
-			{ skipSameErrorCheck: true },
+			{ skipSameErrorCheck: true }
 		);
 
 		expect(res.ctx.errors.length).toBe(5);

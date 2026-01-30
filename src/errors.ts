@@ -1,5 +1,6 @@
-export class StopRetryError extends Error {
-	readonly name: typeof StopRetryError.name;
+import type { RetryContext } from ".";
+
+export class StopError extends Error {
 	readonly original: Error;
 	constructor(message: string | Error) {
 		super();
@@ -12,18 +13,27 @@ export class StopRetryError extends Error {
 			this.original.stack = this.stack;
 		}
 
-		this.name = StopRetryError.name;
+		this.name = StopError.name;
 		this.message = message;
 	}
 }
 
-export class ErrorTypeError extends Error {
-	readonly name: typeof ErrorTypeError.name;
-
+export class NotAnErrorError extends Error {
 	constructor(e: unknown) {
 		super();
-
 		this.message = `Expected instanceof Error, got: "${typeof e}"`;
-		this.name = ErrorTypeError.name;
+		this.name = NotAnErrorError.name;
+	}
+}
+
+export class RetryFailedError extends Error {
+	ctx: RetryContext;
+
+	constructor(ctx: Readonly<RetryContext>) {
+		super();
+
+		this.ctx = ctx;
+		this.name = RetryFailedError.name;
+		this.message = `Retry failed: ${this.ctx.errors[this.ctx.errors.length - 1]}`;
 	}
 }

@@ -11,4 +11,4 @@ export const WAIT_IF_NOT_CONSUMED_DEFAULT = false;
 export const CONCURRENCY_DEFAULT = 1;
 
 export const BOOL_FN_DEFAULT = () => true;
-export const ON_CATCH_DEFAULT = () => {};
+export const ON_CATCH_DEFAULT = () => null;

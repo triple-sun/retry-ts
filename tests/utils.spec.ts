@@ -1,58 +1,60 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <testing> */
 import {
 	FACTOR_DEFAULT,
 	RANDOM_DEFAULT,
 	TIME_MAX_DEFAULT,
 	TRIES_DEFAULT,
-	WAIT_MAX_DEFAULT,
+	WAIT_MAX_DEFAULT
 } from "../src/defaults";
-import { ErrorTypeError, StopRetryError } from "../src/errors";
+import { NotAnErrorError, StopError } from "../src/errors";
 import {
 	getError,
 	getTimeRemaining,
 	getTriesLeft,
 	getWaitTime,
-	saveErrorsToCtx,
+	saveErrorsToContext,
 	tryBoolFn,
 	validateNumericOption,
-	wait,
+	wait
 } from "../src/utils";
 
-describe("utils tests", () => {
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: <tests>
+describe("utils", () => {
 	describe("validateNumericOption", () => {
 		it("should pass for valid numbers", () => {
 			expect(() => validateNumericOption("test", 10)).not.toThrow();
 			expect(() => validateNumericOption("test", 0, { min: 0 })).not.toThrow();
 			expect(() =>
 				validateNumericOption("test", Number.POSITIVE_INFINITY, {
-					finite: false,
-				}),
+					finite: false
+				})
 			).not.toThrow();
 		});
 
 		it("should throw for non-numbers", () => {
 			expect(() => validateNumericOption("test", "10" as any)).toThrow(
-				ErrorTypeError,
+				NotAnErrorError
 			);
-			expect(() => validateNumericOption("test", NaN)).toThrow(ErrorTypeError);
+			expect(() => validateNumericOption("test", NaN)).toThrow(NotAnErrorError);
 		});
 
 		it("should throw for values below min", () => {
 			expect(() => validateNumericOption("test", 5, { min: 10 })).toThrow(
-				RangeError,
+				RangeError
 			);
 		});
 
 		it("should throw for non-finite values if required", () => {
 			expect(() =>
 				validateNumericOption("test", Number.POSITIVE_INFINITY, {
-					finite: true,
-				}),
+					finite: true
+				})
 			).toThrow(RangeError);
 		});
 
 		it("should ignore undefined values", () => {
 			expect(() =>
-				validateNumericOption("test", undefined as any),
+				validateNumericOption("test", undefined as any)
 			).not.toThrow();
 		});
 	});
@@ -80,7 +82,7 @@ describe("utils tests", () => {
 
 		it("should wrap non-Error in ErrorTypeError", () => {
 			const err = getError("string error");
-			expect(err).toBeInstanceOf(ErrorTypeError);
+			expect(err).toBeInstanceOf(NotAnErrorError);
 			expect(err.message).toContain("string");
 		});
 	});
@@ -90,7 +92,7 @@ describe("utils tests", () => {
 			const ctxErrors: Error[] = [];
 			const opts = { skipSameErrorCheck: false };
 			const err1 = new Error("e1");
-			saveErrorsToCtx(err1, ctxErrors, opts as any);
+			saveErrorsToContext(err1, ctxErrors, opts);
 			expect(ctxErrors).toHaveLength(1);
 			expect(ctxErrors[0]).toBe(err1);
 		});
@@ -99,8 +101,8 @@ describe("utils tests", () => {
 			const ctxErrors: Error[] = [];
 			const opts = { skipSameErrorCheck: false };
 			const original = new Error("orig");
-			const stopErr = new StopRetryError(original);
-			saveErrorsToCtx(stopErr, ctxErrors, opts as any);
+			const stopErr = new StopError(original);
+			saveErrorsToContext(stopErr, ctxErrors, opts);
 			expect(ctxErrors).toHaveLength(1);
 			expect(ctxErrors[0]).toBe(original);
 		});
@@ -111,7 +113,7 @@ describe("utils tests", () => {
 			const err1 = new Error("e1");
 			const err2 = new Error("e2");
 			const agg = new AggregateError([err1, err2]);
-			saveErrorsToCtx(agg, ctxErrors, opts as any);
+			saveErrorsToContext(agg, ctxErrors, opts);
 			expect(ctxErrors).toHaveLength(2);
 			expect(ctxErrors).toEqual([err1, err2]);
 		});
@@ -121,8 +123,8 @@ describe("utils tests", () => {
 			const opts = { skipSameErrorCheck: false };
 			const err1 = new Error("same");
 			const err2 = new Error("same");
-			saveErrorsToCtx(err1, ctxErrors, opts as any);
-			saveErrorsToCtx(err2, ctxErrors, opts as any);
+			saveErrorsToContext(err1, ctxErrors, opts);
+			saveErrorsToContext(err2, ctxErrors, opts);
 			expect(ctxErrors).toHaveLength(1);
 		});
 
@@ -131,8 +133,8 @@ describe("utils tests", () => {
 			const opts = { skipSameErrorCheck: true };
 			const err1 = new Error("same");
 			const err2 = new Error("same");
-			saveErrorsToCtx(err1, ctxErrors, opts as any);
-			saveErrorsToCtx(err2, ctxErrors, opts as any);
+			saveErrorsToContext(err1, ctxErrors, opts);
+			saveErrorsToContext(err2, ctxErrors, opts);
 			expect(ctxErrors).toHaveLength(2);
 		});
 	});
@@ -143,7 +145,7 @@ describe("utils tests", () => {
 		});
 		it("should return infinity if tries is infinity", () => {
 			expect(
-				getTriesLeft({ triesConsumed: 100 } as any, Number.POSITIVE_INFINITY),
+				getTriesLeft({ triesConsumed: 100 } as any, Number.POSITIVE_INFINITY)
 			).toBe(Number.POSITIVE_INFINITY);
 		});
 		it("should return 0 if consumed >= tries", () => {
@@ -155,14 +157,18 @@ describe("utils tests", () => {
 		it("should return time remaining", () => {
 			const start = performance.now();
 			const timeMax = 1000;
-			const now = start+200;
+			const now = start + 200;
 
 			expect(getTimeRemaining(start, timeMax, now)).toBeCloseTo(800);
 		});
 
 		it("should return infinity if timeMax is infinity", () => {
 			expect(
-				getTimeRemaining(performance.now(), Number.POSITIVE_INFINITY, performance.now()),
+				getTimeRemaining(
+					performance.now(),
+					Number.POSITIVE_INFINITY,
+					performance.now()
+				)
 			).toBe(Number.POSITIVE_INFINITY);
 		});
 	});
@@ -179,11 +185,11 @@ describe("utils tests", () => {
 			random: RANDOM_DEFAULT,
 			skipSameErrorCheck: false,
 			waitIfNotConsumed: false,
-			onCatch: () => {},
+			onCatch: () => true,
 			consumeIf: () => true,
 			retryIf: () => true,
 			concurrency: 1,
-			signal: null,
+			signal: null
 		};
 
 		it("should calculate basic wait time", () => {
@@ -223,7 +229,7 @@ describe("utils tests", () => {
 	describe("tryBoolFn", () => {
 		it("should return true if fn returns true", async () => {
 			await expect(tryBoolFn(() => true, {} as any, {} as any)).resolves.toBe(
-				true,
+				true
 			);
 		});
 
@@ -236,8 +242,8 @@ describe("utils tests", () => {
 						throw new Error("fail");
 					},
 					ctx,
-					opts,
-				),
+					opts
+				)
 			).resolves.toBe(false);
 			expect(ctx.errors).toHaveLength(1);
 		});

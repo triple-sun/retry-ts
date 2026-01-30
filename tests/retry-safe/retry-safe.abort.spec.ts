@@ -1,17 +1,17 @@
-import { retry } from "../src/retry";
-import { wait } from "../src/utils";
+import { retrySafe } from "../../src/retry-safe";
+import { wait } from "../../src/utils";
 
-describe("retry abort tests", () => {
+describe("retrySafe", () => {
 	it("should abort immediately when signal is aborted before start", async () => {
 		const error = new Error("reason");
 		const controller = new AbortController();
 		controller.abort(error);
 
-		const res = await retry(
-			async () => {
+		const res = await retrySafe(
+			() => {
 				throw new Error("should not run");
 			},
-			{ signal: controller.signal },
+			{ signal: controller.signal }
 		);
 
 		expect(res.ok).toBe(false);
@@ -24,15 +24,15 @@ describe("retry abort tests", () => {
 		const error = new Error("fail");
 		const abortSignalError = new Error("aborted during wait");
 
-		const promise = retry(
-			async () => {
+		const promise = retrySafe(
+			() => {
 				throw new Error("fail");
 			},
 			{
 				tries: 5,
 				waitMin: 1000,
-				signal: controller.signal,
-			},
+				signal: controller.signal
+			}
 		);
 
 		// let it fail once and enter wait
@@ -51,8 +51,8 @@ describe("retry abort tests", () => {
 		const abortReason = new Error("aborted loop");
 		let attempts = 0;
 
-		const promise = retry(
-			async () => {
+		const promise = retrySafe(
+			() => {
 				attempts++;
 				if (attempts === 2) controller.abort(abortReason);
 				throw error;
@@ -60,8 +60,8 @@ describe("retry abort tests", () => {
 			{
 				tries: 5,
 				waitMin: 10,
-				signal: controller.signal,
-			},
+				signal: controller.signal
+			}
 		);
 
 		const res = await promise;
