@@ -1,6 +1,6 @@
 export { ErrorTypeError, StopError } from "./errors";
 
-import { retrySafe, retryUnsafe } from "./retry";
+import { retryLoop } from "./retry";
 import type { OnTryFunction, RetryOptions, RetryResult } from "./types";
 import {
 	createInternalOptions,
@@ -39,9 +39,16 @@ export async function retry<VALUE_TYPE>(
 	const ctx = createRetryContext();
 	switch (type) {
 		case "safe":
-			return await retrySafe(onTry, ctx, opts);
+			try {
+				const value = await retryLoop(onTry, ctx, opts);
+				ctx.end = performance.now();
+				return { value, ok: true, ctx };
+			} catch (_) {
+				ctx.end = performance.now();
+				return { ok: false, ctx };
+			}
 		case "unsafe":
-			return await retryUnsafe(onTry, ctx, opts);
+			return await retryLoop(onTry, ctx, opts);
 		default: {
 			const _exhaustive: never = type;
 			throw new Error(`Unexpected type: ${_exhaustive}`);

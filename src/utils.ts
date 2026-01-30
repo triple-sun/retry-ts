@@ -205,15 +205,12 @@ export const onRetryCatch = async (
 
 	opts.signal?.throwIfAborted();
 	const triesLeft = getTriesLeft(ctx, opts.retries);
-
-	opts.signal?.throwIfAborted();
 	const timeRemaining = getTimeRemaining(
 		ctx.start,
 		opts.timeMax,
 		performance.now()
 	);
 
-	opts.signal?.throwIfAborted();
 	await opts.onCatch(ctx);
 
 	opts.signal?.throwIfAborted();
