@@ -40,20 +40,22 @@ export interface RetryOptions {
 
 	/**
 	 * @description limit execution time by ms
+	 * Should be >waitMin
 	 * @default TIME_MAX_DEFAULT
 	 */
 	readonly timeMax?: number;
 
 	/**
 	 * @description set min wait time between attempts
-	 * overridden by time remaining
+	 * overridden by timeMax
+	 * Should be < waitMax
 	 * @default WAIT_MIN_DEFAULT
 	 */
 	readonly waitMin?: number;
 
 	/**
 	 * @description max wait between attempts
-	 * overrides waitMin if waitMax<waitMin
+	 * should be > waitMin
 	 * @default WAIT_MAX_DEFAULT
 	 */
 	readonly waitMax?: number;

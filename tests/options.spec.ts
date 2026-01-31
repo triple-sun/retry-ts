@@ -118,8 +118,8 @@ describe("Options Handling", () => {
 	});
 
 	describe("validateOptions", () => {
-		it("should validate retries must be >= 1", () => {
-			const opts = createInternalOptions({ retries: 0 });
+		it("should validate retries must be >= 0", () => {
+			const opts = createInternalOptions({ retries: -1 });
 			expect(() => validateOptions(opts)).toThrow(RangeError);
 			expect(() => validateOptions(opts)).toThrow("retries");
 		});

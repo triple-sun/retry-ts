@@ -72,7 +72,7 @@ export const validateNumericOption = (
 export const validateOptions = (opts: InternalRetryOptions) => {
 	validateNumericOption("retries", opts.retries, {
 		finite: false,
-		min: 1
+		min: 0
 	});
 	validateNumericOption("waitMin", opts.waitMin, {
 		finite: true
@@ -253,6 +253,7 @@ export const onRetryCatch = async (
 
 			timeout = setTimeout(() => {
 				opts.signal?.removeEventListener("abort", onAbort);
+				opts.onTimeout(ctx);
 				resolve();
 			}, waitTime);
 		}).finally(() => {

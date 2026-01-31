@@ -1,6 +1,6 @@
 {
 	"name": "again-ts",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Async function retrying written in typescript",
 	"author": "triplesun",
 	"license": "ISC",
@@ -42,7 +42,7 @@
 		"build"
 	],
 	"devDependencies": {
-		"@biomejs/biome": "2.3.11",
+		"@biomejs/biome": "2.3.10",
 		"@types/jest": "^30.0.0",
 		"@types/node": "^22.9.0",
 		"husky": "^9.1.7",

@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-01-31
+
+### Fixed
+
+- **Fixed `onTimeout` callback not being called**
+  - The timeout callback is now actually invoked when wait time expires
+
+- **Fixed `retries: 0` validation error**
+  - Minimum retries value changed from 1 to 0
+  - Now allows immediate failure without retry attempts when `retries: 0` is configured
+
+### Documentation
+
+- **Improved `RetryOptions` JSDoc comments**
+  - Added clarification that `timeMax` should be greater than `waitMin`
+  - Updated `waitMin` documentation to clarify it's overridden by `timeMax`
+  - Added note that `waitMin` should be less than `waitMax`
+
+### Dependencies
+
+- Downgraded `@biomejs/biome` to version 2.3.10 due to issues with VSCode language server in 2.3.13
+
+## [1.0.2] - 2026-01-30
+
+### Changed
+
+- **Refactored retry implementation**
+  - Consolidated `retrySafe` and `retryUnsafe` functions into main `retry` function
+  - Moved safe/unsafe logic from separate functions into the main type switch
+  - Exported `retryLoop` for better code organization
+  - Reduced code duplication and improved maintainability
+
+### Fixed
+
+- **Removed excessive `signal.throwIfAborted()` calls**
+  - Eliminated redundant abort checks in `onRetryCatch` function
+
 ## [1.0.0] - 2026-01-30
 
 ### Breaking Changes
@@ -15,7 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Removed `timeMin` option from public API**
   - This option was never implemented but was exposed in the TypeScript interface
-  - Migration: Remove any usage of `timeMin` option
 
 ### Added
 
