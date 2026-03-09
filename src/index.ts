@@ -1,5 +1,3 @@
-export { ErrorTypeError, StopError } from "./errors";
-
 import { retryLoop } from "./retry";
 import type { OnTryFunction, RetryOptions, RetryResult } from "./types";
 import {
@@ -8,6 +6,7 @@ import {
 	validateOptions
 } from "./utils";
 
+export { ErrorTypeError, RetryFailedError, StopError } from "./errors";
 export type {
 	OnTryFunction,
 	RetryContext,
